@@ -113,9 +113,6 @@ public class WallFollowingRobot {
 		float upper_bound_from_wall = (float) .20;
 		ultrasensor.fetchSample(sample_ultrasonic, 0);
 		float current_dist = (float) 0.0;
-		float default_speed = motor_speed;
-		float mAspeed = motor_speed;
-		float mBspeed = motor_speed;
 		mA.forward();
 		mB.forward();
 		while (sample_ultrasonic[sample_ultrasonic.length - 1] < Float.POSITIVE_INFINITY) {
@@ -124,9 +121,8 @@ public class WallFollowingRobot {
 			// Check below value
 			if (sample_ultrasonic[sample_ultrasonic.length - 1] < lower_bound_from_wall) {
 				System.out.println("Going away from wall");
-				mAspeed = mAspeed *1.5;
-				mA.setSpeed(mAspeed);
-				mB.setSpeed(default_speed);
+				mA.setSpeed(motor_speed * (float) 1.5);
+				mB.setSpeed(motor_speed);
 			} else if (sample_ultrasonic[sample_ultrasonic.length - 1] > upper_bound_from_wall) {
 				System.out.println("Going to wall");
 
@@ -211,42 +207,6 @@ public class WallFollowingRobot {
 
 	}
 
-	public void goToWall(float distance_from_wall) {
-		// Synchronize motors and move forward.
-		System.out.println("Heading to wall.");
-		this.mA.synchronizeWith(motors);
-		this.mA.startSynchronization();
-		this.mA.forward();
-		this.mB.forward();
-		this.mA.endSynchronization();
-
-		// Get close to wall.
-		int count = 0; // used to keep from spamming output.
-		ultrasensor.fetchSample(sample_ultrasonic, 0);
-		while (sample_ultrasonic[sample_ultrasonic.length - 1] > distance_from_wall) {
-			// Slow down once close to goal distance (10 cm)
-			if (sample_ultrasonic[sample_ultrasonic.length - 1] - distance_from_wall < .1) {
-				// Slow down!
-				mB.setSpeed(motor_speed / 8);
-				mA.setSpeed(motor_speed / 8);
-			}
-			if (count % 500 == 0) { // only print on every 10th run.
-				System.out.println("Sample Distance: " + sample_ultrasonic[sample_ultrasonic.length - 1]);
-			}
-			ultrasensor.fetchSample(sample_ultrasonic, 0);
-			count++;
-		}
-		// Stop moving!
-		mA.synchronizeWith(motors);
-		mA.startSynchronization();
-		mA.stop();
-		mB.stop();
-		mA.endSynchronization();
-		mA.waitComplete();
-		mB.waitComplete();
-
-	}
-
 	public void setUpMotors(float motor_speed, int acceleration) {
 		// Configures Motors with custom acceleration and speed.
 		// System.out.println("(RE)SETTING MOTORS");
@@ -319,7 +279,7 @@ public class WallFollowingRobot {
 
 		this.mB.setSpeed(motor_speed / 2);
 		this.mB.forward();
-		//Using -1 rather than 0 to correct for over-rotation. 
+		//Using -1 rather than 0 to correct for overrotation. 
 		while (sample_gyro[sample_gyro.length - 1] < -1) {
 			gyro.fetchSample(sample_gyro, 0);
 			System.out.println("Sample Gyro: Angle: " + sample_gyro[sample_gyro.length - 1]);
